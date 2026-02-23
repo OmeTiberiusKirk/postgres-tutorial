@@ -3,7 +3,7 @@
 ## Architectural Fundamentals
 
 - PostgreSQL ใช้ 2 โมเดลคือ client / server
-- sessions ของ PostgreSQL ประกอบด้วย 2 กระบวนการ ที่ทำงานร่วมกันดังต่อไปนี้:
+- Session ของ PostgreSQL ประกอบด้วย 2 กระบวนการ ที่ทำงานร่วมกันดังต่อไปนี้:
   - server process กระบวนการเซิร์ฟเวอร์ซึ่งจัดการไฟล์ฐานข้อมูล จะรับการเชื่อมต่อกับฐานข้อมูลจากแอปพลิเคชัน (client) และดำเนินการต่างๆ ในฐานข้อมูลในนามของ client โปรแกรมฐานข้อมูลฝั่ง server นี้เรียกว่า postgres
   - The user's client (frontend) application ที่ต้องการดำเนินการกับฐานข้อมูล แอปพลิเคชันไคลเอ็นต์นั้นมีความหลากหลายมาก เช่น อาจเป็นเครื่องมือที่เน้นข้อความ, แอปพลิเคชันแบบกราฟิก, เว็บเซิร์ฟเวอร์ที่เข้าถึงฐานข้อมูลเพื่อแสดงหน้าเว็บ, หรือเครื่องมือบำรุงรักษาฐานข้อมูลเฉพาะทาง แอปพลิเคชันไคลเอ็นต์บางส่วนมีให้มาพร้อมกับ PostgreSQL แต่ส่วนใหญ่พัฒนาโดยผู้ใช้เอง
 
@@ -11,21 +11,22 @@
 
 ## Installation
 
-`docker run -d --rm --name pg -p 5432:5432 -e POSTGRES_PASSWORD=123qwe postgres`
+`docker run -d --rm --name pg -p 5432:5432 --user postgres -e POSTGRES_PASSWORD=123qwe postgres`
 
 ## Creating a database
 
-- ทดสอบเพื่อดูว่า สามารถเข้าถึงเซิร์ฟเวอร์ฐานข้อมูลได้หรือไม่ ลองสร้างฐานข้อมูล และเซิร์ฟเวอร์ PostgreSQL สามารถจัดการฐานข้อมูลได้มากกว่า 1 แต่โดยทั่วไปแล้ว จะใช้ฐานข้อมูลแยกกัน ในแต่ละโปรเจค หรือแต่หละ user
-  - `createdb -U postgres exat`[^1] [^2]
+- ทดสอบเพื่อดูว่า สามารถเข้าถึงเซิร์ฟเวอร์ฐานข้อมูลได้หรือไม่ ลองสร้างฐานข้อมูล
+  - `createdb exat || createdb -U postgres exat`[^1] [^2]
     - createdb คือคำสั่งในรูปแบบ Command Line Utility ของ PostgreSQL ที่ใช้สำหรับสร้างฐานข้อมูลใหม่ได้อย่างรวดเร็วผ่าน Terminal หรือ Command Prompt โดยเป็น Wrapper (ตัวครอบ) ของคำสั่ง SQL CREATE DATABASE ทำให้สร้างฐานข้อมูล, กำหนดเจ้าของ (-O), หรือกำหนด Encoding ได้โดยตรงโดยไม่ต้องเข้าใช้งานผ่าน psql
     - วิธีดู Utility ของ PostgreSQL อะไรบ้างใช้คำสั่ง `ls -l /usr/bin | grep "pg_wrapper"`
-  - `dropdb -U postgres exat`[^1]
+  - `dropdb exat || dropdb -U postgres exat`[^1]
+  - PostgreSQL สามารถจัดการฐานข้อมูลได้มากกว่า 1 แต่โดยทั่วไปแล้ว จะใช้ฐานข้อมูลแยกกัน ในแต่ละโปรเจค หรือแต่หละ user
 
 ## Accessing a Database
 
 - เมื่อคุณสร้างฐานข้อมูลเสร็จแล้ว สามารถเข้าถึงได้โดยวิธีดังต่อไปนี้
   - PostgreSQL interactive terminal program เรียกว่า psql ซึ่งช่วยให้สามารถป้อน แก้ไข และเรียกใช้คำสั่ง SQL
-  - สามารถเปิดใช้งานฐานข้อมูล exat ได้โดยพิมพ์คำสั่ง `psql -U postgrres exat`[^1]
+  - สามารถเปิดใช้งานฐานข้อมูล exat ได้โดยพิมพ์คำสั่ง `psql exat || psql -U postgres exat`[^1]
   - สิ่งที่จะเห็นคือ `exat=>`[^3]
     - `select version();`
     - `select current_date;`
