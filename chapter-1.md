@@ -18,7 +18,7 @@
 - ทดสอบเพื่อดูว่า สามารถเข้าถึงเซิร์ฟเวอร์ฐานข้อมูลได้หรือไม่ ลองสร้างฐานข้อมูล
   - `createdb exat || createdb -U postgres exat`[^1] [^2]
     - createdb คือคำสั่งในรูปแบบ Command Line Utility ของ PostgreSQL ที่ใช้สำหรับสร้างฐานข้อมูลใหม่ได้อย่างรวดเร็วผ่าน Terminal หรือ Command Prompt โดยเป็น Wrapper (ตัวครอบ) ของคำสั่ง SQL CREATE DATABASE ทำให้สร้างฐานข้อมูล, กำหนดเจ้าของ (-O), หรือกำหนด Encoding ได้โดยตรงโดยไม่ต้องเข้าใช้งานผ่าน psql
-    - วิธีดู Utility ของ PostgreSQL อะไรบ้างใช้คำสั่ง `ls -l /usr/bin | grep "pg_wrapper"`
+    - วิธีดู Utility ของ PostgreSQL มีอะไรบ้าง ให้ใช้คำสั่ง `ls -l /usr/bin | grep "pg_wrapper"`
   - `dropdb exat || dropdb -U postgres exat`[^1]
   - PostgreSQL สามารถจัดการฐานข้อมูลได้มากกว่า 1 แต่โดยทั่วไปแล้ว จะใช้ฐานข้อมูลแยกกัน ในแต่ละโปรเจค หรือแต่หละ user
 
