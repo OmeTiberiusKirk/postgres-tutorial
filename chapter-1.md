@@ -28,6 +28,7 @@
   - PostgreSQL interactive terminal program เรียกว่า psql ซึ่งช่วยให้สามารถป้อน แก้ไข และเรียกใช้คำสั่ง SQL
   - สามารถเปิดใช้งานฐานข้อมูล exat ได้โดยพิมพ์คำสั่ง `psql exat || psql -U postgres exat`[^1]
   - สิ่งที่จะเห็นคือ `exat=>`[^3]
+  - ทดสอบ:
     - `select version();`
     - `select current_date;`
     - `select 2+2;`
