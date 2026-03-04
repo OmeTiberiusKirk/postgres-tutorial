@@ -9,6 +9,23 @@
 
 โดยทั่วไปแล้ว client / server นั้นสามารถอยู่บนโฮสต์ที่แตกต่างกันได้ ในกรณีนี้จะสื่อสารกันผ่านการเชื่อมต่อเครือข่าย TCP/IP
 
+## Getting the Source
+
+ดาวน์โหลดไฟล์ได้ที่ https://www.postgresql.org/ftp/source/<br>
+หาเวอร์ชั่นที่ต้องการ postgresql-{version}.tar.gz หรือ postgresql-{version}.tar.bz2 แล้วแตกไฟล์:
+
+```
+tar -xvf postgresql-{version}.tar.gz
+```
+
+## Installing the software packages
+
+```
+sudo apt update &&
+sudo apt install -y build-essential pkg-config libicu-dev \
+bison flex libreadline-dev zlib1g-dev
+```
+
 ## Installation
 
 ```
@@ -130,11 +147,7 @@ find $PGDATA -type f -exec chmod 600 {} +
 
 ### Footnotes
 
-[^1]: daemon คือโปรแกรมที่รันอยู่เบื้องหลังตลอดเวลา เช่น
-
-    - Web server (เช่น Nginx, Apache)
-    - Database server (เช่น PostgreSQL)
-    - SSH server
+[^1]: daemon คือโปรแกรมที่รันอยู่เบื้องหลังตลอดเวลา เช่น Web server (เช่น Nginx, Apache), Database server (เช่น PostgreSQL) และ SSH server
 
 [^2]: โดยปกติแล้ว เวอร์ชันสำเร็จรูปของ PostgreSQL จะสร้างบัญชีผู้ใช้ที่เหมาะสมโดยอัตโนมัติ ระหว่างการติดตั้งแพ็กเกจ
 
