@@ -39,10 +39,11 @@ bison flex libreadline-dev zlib1g-dev
 ```
 
 ## Building and Installation
+
 ```
 ./configure
 make
-su
+sudo su
 make install
 adduser postgres
 mkdir -p /usr/local/pgsql/data
@@ -52,6 +53,12 @@ su - postgres
 /usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start
 /usr/local/pgsql/bin/createdb test
 /usr/local/pgsql/bin/psql test
+```
+
+## Shared Libraries
+
+```
+sudo ln -s /usr/local/pgsql/bin/psql /usr/local/bin/psql
 ```
 
 ## The PostgreSQL User Account
