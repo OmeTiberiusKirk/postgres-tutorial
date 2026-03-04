@@ -59,6 +59,8 @@ su - postgres
 
 ```
 sudo ln -s /usr/local/pgsql/bin/psql /usr/local/bin/psql
+sudo ln -s /usr/local/pgsql/bin/initdb /usr/local/bin/initdb
+sudo ln -s /usr/local/pgsql/bin/pg_ctl /usr/local/bin/pg_ctl
 ```
 
 ## The PostgreSQL User Account
