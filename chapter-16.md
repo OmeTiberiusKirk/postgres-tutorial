@@ -22,7 +22,7 @@ tar -xvf postgresql-{version}.tar.gz
 
 ```
 sudo apt update &&
-sudo apt install -y build-essential pkg-config libicu-dev \
+sudo apt install -y bzip2 build-essential pkg-config libicu-dev \
 bison flex libreadline-dev zlib1g-dev
 ```
 
@@ -36,6 +36,22 @@ bison flex libreadline-dev zlib1g-dev
 
 ```
   docker run -d --rm --name pg -p 5432:5432 -e POSTGRES_PASSWORD=123qwe postgres:18
+```
+
+## Building and Installation
+```
+./configure
+make
+su
+make install
+adduser postgres
+mkdir -p /usr/local/pgsql/data
+chown postgres /usr/local/pgsql/data
+su - postgres
+/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data
+/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start
+/usr/local/pgsql/bin/createdb test
+/usr/local/pgsql/bin/psql test
 ```
 
 ## The PostgreSQL User Account
