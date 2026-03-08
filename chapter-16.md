@@ -1,3 +1,26 @@
+## wsl
+
+### export & imoprt distro
+
+```
+wsl --terminate ubuntu-24.04
+wsl --export ubuntu-24.04 $USERPROFILE/Downloads/ubuntu.tar
+wsl --import ubuntu-24.04 $USERPROFILE/AppData/Local/Packages/Ubuntu $USERPROFILE/Downloads/ubuntu.tar
+```
+
+### ปิด dir background โดยการแก้ไข
+
+```
+//  ~/.bashrc
+LS_COLORS=$LS_COLORS:'ow=1;34:'
+```
+
+จากนั้น source ~/.bashrc
+
+### ปรับแต่งแบบ vim แบบ global ได้ใน
+
+`/etc/vim/vimrc.local`
+
 ## Architectural Fundamentals
 
 ในศัพท์ทางฐานข้อมูล PostgreSQL ใช้โมเดลแบบ Client/Server (ลูกข่าย/แม่ข่าย)
@@ -9,15 +32,6 @@
 
 โดยทั่วไปแล้ว client / server นั้นสามารถอยู่บนโฮสต์ที่แตกต่างกันได้ ในกรณีนี้จะสื่อสารกันผ่านการเชื่อมต่อเครือข่าย TCP/IP
 
-## Getting the Source
-
-ดาวน์โหลดไฟล์ได้ที่ https://www.postgresql.org/ftp/source/<br>
-หาเวอร์ชั่นที่ต้องการ postgresql-{version}.tar.gz หรือ postgresql-{version}.tar.bz2 แล้วแตกไฟล์:
-
-```
-tar -xvf postgresql-{version}.tar.gz
-```
-
 ## Installing the software packages
 
 ```
@@ -26,16 +40,12 @@ sudo apt install -y bzip2 build-essential pkg-config libicu-dev \
 bison flex libreadline-dev zlib1g-dev
 ```
 
-## Installation
+## Getting the Source
+
+ดาวน์โหลดไฟล์ได้ที่ https://www.postgresql.org/ftp/source/ หาเวอร์ชั่นที่ต้องการ postgresql-{version}.tar.gz หรือ postgresql-{version}.tar.bz2 แล้วแตกไฟล์:
 
 ```
-  sudo apt install -y postgresql-common
-  sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-  sudo apt install -y postgresql-18
-```
-
-```
-  docker run -d --rm --name pg -p 5432:5432 -e POSTGRES_PASSWORD=123qwe postgres:18
+tar -xvf postgresql-{version}.tar.gz
 ```
 
 ## Building and Installation
@@ -61,19 +71,22 @@ su - postgres
 sudo ln -s /usr/local/pgsql/bin/psql /usr/local/bin/psql
 sudo ln -s /usr/local/pgsql/bin/initdb /usr/local/bin/initdb
 sudo ln -s /usr/local/pgsql/bin/pg_ctl /usr/local/bin/pg_ctl
+sudo ln -s /usr/local/pgsql/bin/createdb /usr/local/bin/createdb
+sudo ln -s /usr/local/pgsql/bin/createuser /usr/local/bin/createuser
+sudo ln -s /usr/local/pgsql/bin/dropuser /usr/local/bin/dropuser
 ```
 
 ## The PostgreSQL User Account
 
 เช่นเดียวกับโปรแกรมเซิร์ฟเวอร์ (daemon) [^1] อื่นๆ ที่เปิดให้เข้าถึงจากภายนอก ควรรัน PostgreSQL ภายใต้บัญชีผู้ใช้ (user account) ที่แยกต่างหาก
 
-บัญชีผู้ใช้นี้ควรเป็นเจ้าของเฉพาะข้อมูล ที่จัดการโดยเซิร์ฟเวอร์เท่านั้น และไม่ควรแชร์กับ daemons อื่นๆ (ตัวอย่างเช่น การใช้ผู้ใช้ nobody เป็นความคิดที่ไม่ดี)
+บัญชีผู้ใช้นี้ควรเป็นเจ้าของเฉพาะข้อมูล ที่จัดการโดยเซิร์ฟเวอร์เท่านั้น และไม่ควรแชร์กับ daemon อื่นๆ
 
-ขอแนะนำว่าบัญชีผู้ใช้นี้ [^2] ไม่ควรเป็นเจ้าของไฟล์ปฏิบัติการของ PostgreSQL เพื่อให้แน่ใจว่ากระบวนการเซิร์ฟเวอร์ ที่ถูกบุกรุกจะไม่สามารถแก้ไขไฟล์ปฏิบัติการเหล่านั้นได้ เช่น :
+(ตัวอย่างเช่น การใช้ผู้ใช้ nobody เป็นความคิดที่ไม่ดี) ขอแนะนำว่าบัญชีผู้ใช้นี้ ไม่ควรเป็นเจ้าของไฟล์ปฏิบัติการของ PostgreSQL เพื่อให้แน่ใจว่ากระบวนการเซิร์ฟเวอร์ ที่ถูกบุกรุกจะไม่สามารถแก้ไขไฟล์ปฏิบัติการเหล่านั้นได้ เช่น :
 
 ```
-  /usr/lib/postgresql/16/bin/postgres
-  /usr/bin/psql
+  /usr/local/pgsql/bin/postgres
+  /usr/local/pgsql/bin/psql
 ```
 
 ## Creating a Database Cluster
@@ -85,18 +98,9 @@ sudo ln -s /usr/local/pgsql/bin/pg_ctl /usr/local/bin/pg_ctl
 เซิร์ฟเวอร์ฐานข้อมูลตัวมันเอง ไม่จำเป็นต้องมีฐานข้อมูล postgres อยู่ แต่โปรแกรมยูทิลิตี้ภายนอก หลายโปรแกรมจะคิดว่ามันมีอยู่ เช่น `psql -U postgres` มันจะพยายาม connect เข้า database ที่ชื่อ เหมือน username
 
 ```
+// ตัวอย่าง error
 psql: error: FATAL: database "postgres" does not exist
 ```
-
-ระหว่างการเริ่มต้นระบบ จะมีการสร้างฐานข้อมูลเพิ่มอีก 2 databases ภายในแต่ละคลัสเตอร์ โดยตั้งชื่อว่า template1 และ template0 ฐานข้อมูลเหล่านี้ จะใช้เป็นแม่แบบสำหรับฐานข้อมูล ที่จะสร้างขึ้นในภายหลัง ไม่ควรนำไปใช้งานจริง
-
-ทำไมถึงมี `database` ชื่อ `postgres` มาให้?<br>
-ตอน init cluster (initdb) จะสร้าง 3 ตัวหลัก:
-| Database | หน้าที่ |
-| --- | --- |
-| template0 | ใช้ clone DB แบบ clean |
-| template1 | ใช้เป็น template ปกติ |
-| postgres | ใช้เป็น default DB สำหรับ admin |
 
 postgres มีไว้เป็น safe default สำหรับ:
 
@@ -106,9 +110,7 @@ postgres มีไว้เป็น safe default สำหรับ:
 
 ในแง่ของระบบไฟล์ database cluster คือไดเร็กทอรีเดียวที่ใช้เก็บข้อมูลทั้งหมด เราเรียกสิ่งนี้ว่า `data directory` หรือ `data area` คุณสามารถเลือกที่จัดเก็บข้อมูลได้เองทั้งหมด
 
-ไม่มีค่าเริ่มต้นตายตัว แต่ตำแหน่งที่นิยมใช้ ได้แก่ `/usr/local/pgsql/data` หรือ `/var/lib/pgsql/data` [^3]
-
-หากคุณกำลังใช้งาน PostgreSQL เวอร์ชันที่ถูกแพ็คเกจมาสำเร็จรูป (pre-packaged) มันอาจจะมีข้อกำหนด/แนวทางปฏิบัติ (convention) เฉพาะเจาะจงว่าควรวางไดเรกทอรีข้อมูลไว้ที่ใด และอาจมีสคริปต์สำหรับสร้างไดเรกทอรีข้อมูลเตรียมไว้ให้ด้วย
+ไม่มีค่าเริ่มต้นตายตัว แต่ตำแหน่งที่นิยมใช้ ได้แก่ `/usr/local/pgsql/data` หรือ `/var/lib/pgsql/data`
 
 ในการเริ่มต้น `database cluster` ด้วยตนเอง ให้ใช้คำสั่ง `initdb` และระบุตำแหน่งระบบไฟล์ที่ต้องการของ `database cluster` โดยใช้ตัวเลือก -D ตัวอย่างเช่น :
 
@@ -130,10 +132,6 @@ export PGDATA=/usr/local/pgsql/data
 
 หากปรากฏ `initdb: command not found` ให้ใช้คำสั่ง:
 
-```
-sudo ln -s /usr/lib/postgresql/18/bin/initdb /usr/bin/initdb
-```
-
 initdb จะพยายามสร้างไดเร็กทอรีที่คุณระบุหากยังไม่มีอยู่ แน่นอนว่าขั้นตอนนี้จะล้มเหลว initdb ไม่มีสิทธิ์ในการเขียนใน /usr/local directory แนะนำให้ผู้ใช้ PostgreSQL เป็นเจ้าของไม่เพียงแค่ data directory เท่านั้น แต่รวมถึง pgsql directory ด้วย เพื่อไม่ให้เกิดปัญหานี้
 
 คุณจะต้องสร้างมันขึ้นมาก่อน โดยใช้สิทธิ์ root หาก /usr/local ไม่สามารถเขียนได้ ดังนั้นกระบวนการจะมีลักษณะดังนี้:
@@ -153,29 +151,69 @@ postgres$ initdb -D /usr/local/pgsql/data
 เพื่อที่จะสามารถสำรอง cluster data หรือดำเนินการอื่นๆ ที่ต้องการเพียงสิทธิ์ในการอ่านเท่านั้นได้
 
 การให้ หรือไม่ให้ เข้าถึงแบบกลุ่มบนคลัสเตอร์ จำเป็นต้องปิดคลัสเตอร์ แล้วค่อยตั้งค่าโหมดที่เหมาะสมสำหรับไดเร็กทอรี่ และไฟล์ทั้งหมดก่อน ที่จะเริ่มต้น PostgreSQL ใหม่
-มิเช่นนั้น อาจมีโหมดต่างๆ ปะปนกันอยู่ใน `data directory`<br>
+มิเช่นนั้น อาจมีโหมดต่างๆ ปะปนกันอยู่ใน `data directory`
 
 - สำหรับคลัสเตอร์ที่อนุญาตให้เข้าถึงได้เฉพาะเจ้าของ โหมดที่เหมาะสมคือ 0700 สำหรับไดเร็กทอรี และ 0600 สำหรับไฟล์
 - สำหรับคลัสเตอร์ที่อนุญาตให้กลุ่มอ่านได้ด้วย โหมดที่เหมาะสมคือ 0750 สำหรับไดเร็กทอรี และ 0640 สำหรับไฟล์
 
 ```
-// วิธีปิด postgresql service
-sudo systemctl stop postgresql
+# ปิด cluster
+pg_ctl -l logfile stop
+
+# สำหรับ directories
+find $PGDATA -type d -exec chmod 700 {} +
+
+# สำหรับ files
+find $PGDATA -type f -exec chmod 600 {} +
+
+# เปิด cluster
+pg_ctl -l logfile start
 ```
 
+อย่างไรก็ตาม แม้ว่าเนื้อหาในไดเร็กทอรีจะปลอดภัย แต่การตั้งค่าการตรวจสอบสิทธิ์ไคลเอ็นต์เริ่มต้น อนุญาตให้ local user ใดก็ตาม สามารถเชื่อมต่อกับฐานข้อมูล แม้จะเป็นผู้ใช้ระดับสูงสุด ของฐานข้อมูลก็ตาม
+
+หากคุณไม่ไว้วางใจผู้ใช้ภายในเครื่องอื่น เราขอแนะนำให้คุณใช้ตัวเลือก -W, --pwprompt หรือ --pwfile ตอน initdb เพื่อกำหนดรหัสผ่าน ให้กับผู้ใช้ระดับสูงสุดของฐานข้อมูล
+
+นอกจากนี้ ให้ระบุ -A scram-sha-256 เพื่อไม่ให้ใช้โหมด trust ในการตรวจสอบสิทธิ์ หรือแก้ไขไฟล์ pg_hba.conf ที่สร้างขึ้นหลังจากเรียกใช้ initdb ก็ได้
+
+คำสั่ง initdb จะกำหนดค่า locale เริ่มต้นให้ `database cluster` ด้วย โดยปกติแล้ว คำสั่งนี้จะใช้การตั้งค่า locale ในสภาพแวดล้อม และนำไปใช้กับฐานข้อมูลที่เริ่มต้นใช้งาน
+
 ```
-// สำหรับ directories
-find $PGDATA -type d -exec chmod 700 {} +
-// สำหรับ files
-find $PGDATA -type f -exec chmod 600 {} +
+# 1. ติดตั้งภาษาไทยลงใน OS
+sudo locale-gen th_TH.UTF-8
+
+# 2. อัปเดตการตั้งค่าภาษา
+sudo update-locale
 ```
+
+ค่าเริ่มต้นลำดับการจัดเรียง ที่ใช้ภายใน `database cluster` นั้น ถูกกำหนดโดย initdb และถึงแม้คุณจะสามารถสร้างฐานข้อมูลใหม่ โดยใช้ลำดับการจัดเรียงที่แตกต่างกันได้ [^2] แต่ลำดับที่ใช้ในฐานข้อมูล template ที่ initdb สร้างขึ้นนั้นไม่สามารถเปลี่ยนแปลงได้ นอกจากจะลบและสร้างใหม่ การใช้ locale อื่นที่ไม่ใช่ C หรือ POSIX [^3] ยังส่งผลกระทบ ต่อประสิทธิภาพการทำงานเช่นกัน ดังนั้น การเลือกภาษาท้องถิ่น ให้ถูกต้องตั้งแต่ครั้งแรกจึงเป็นสิ่งสำคัญ
+
+คำสั่ง initdb ยังตั้งค่าการเข้ารหัสชุดอักขระเริ่มต้น สำหรับคลัสเตอร์ฐานข้อมูลด้วย โดยปกติแล้วควรเลือกให้ตรงกับ การตั้งค่า locale
+
+locale ที่ไม่ใช่ C และไม่ใช่ POSIX จะอาศัยไลบรารีการเรียงลำดับ `ของระบบปฏิบัติการ` ในการจัดเรียงชุดอักขระ ซึ่งควบคุมลำดับของคีย์ ที่จัดเก็บไว้ในดัชนี สิ่งนี้ควบคุมลำดับของคีย์ที่จัดเก็บไว้ในดัชนี ด้วยเหตุนี้ คลัสเตอร์จึงไม่สามารถเปลี่ยนไปใช้ เวอร์ชั่นไลบรารีการเรียงลำดับที่ต่างกันได้ ไม่ว่าจะด้วยวิธีการกู้คืนสแนปช็อต, การจำลองแบบสตรีมมิ่งไบนารี, OS ที่แตกต่างกัน หรือการอัปเกรด OS
+
+## Use of Secondary File Systems (External Storage)
+
+เหตุผลที่ควรเข้าไปสร้าง `sub directory` แทนที่จะวางข้อมูลไว้ที่จุด `mount point` โดยตรง
+
+### ปัญหาเรื่องสิทธิ์การเข้าถึง (Permissions)
+
+โดยปกติแล้ว Mount Point (เช่น /data หรือ /mnt/db) มักจะมี root เป็นเจ้าของสิทธิ์ ซึ่งการเปลี่ยนเจ้าของ (Ownership) ที่ตัว Mount Point เลยอาจสร้างความยุ่งยากเมื่อมีการอัปเกรดระบบ หรือใช้ Tool อย่าง pg_upgrade ที่ต้องการสิทธิ์ในการเขียน/อ่านที่ชัดเจนและจำกัดเฉพาะ User postgres
+
+โครงสร้างที่แนะนำ:
+
+- /mnt/database (Mount Point: เจ้าของคือ root)
+  - /pg_data_root (Sub-directory: เจ้าของคือ postgres)
+    - /data (Actual Data Dir: เจ้าของคือ postgres)
+
+### การแยกแยะความล้มเหลว (Clean Failures)
+
+ถ้าคุณสั่งให้ PostgreSQL มองหาข้อมูลที่ /mnt/db โดยตรง แต่เกิดเหตุการณ์ที่ Disk หลุด (Unmounted):
 
 ### Footnotes
 
 [^1]: daemon คือโปรแกรมที่รันอยู่เบื้องหลังตลอดเวลา เช่น Web server (เช่น Nginx, Apache), Database server (เช่น PostgreSQL) และ SSH server
 
-[^2]: โดยปกติแล้ว เวอร์ชันสำเร็จรูปของ PostgreSQL จะสร้างบัญชีผู้ใช้ที่เหมาะสมโดยอัตโนมัติ ระหว่างการติดตั้งแพ็กเกจ
+[^2]: แม้ว่า initdb หากกำหนดค่าเริ่มต้นของ Cluster เป็น en_US ไปแล้ว แต่ PostgreSQL ออกแบบมาให้เราสามารถสร้าง Database ใหม่ที่มีการตั้งค่า Locale ต่างจากค่าเริ่มต้นได้ (เรียกว่าการ Overwrite ค่า Default) แต่เวลาคุณสั่งรัน Tool บางอย่างผ่าน Command Line (เช่น reindexdb หรือ vacuumdb) ถ้าไม่ได้ระบุ Database ให้ชัดเจน มันอาจจะอ้างอิงค่าจาก User Environment แทน
 
-[^3]:
-    แต่หากติดตั้งผ่าน docker `data directory` จะถูกสร้างอัตโนมัติที่
-    `/var/lib/postgresql/18/docker`
+[^3]: C หรือ POSIX เรียงตาม Binary ไม่สนภาษา ปลอดภัยที่สุดในการย้ายเครื่อง แต่อาจเรียงภาษาไทยไม่ค่อยดี
