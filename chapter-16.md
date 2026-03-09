@@ -110,21 +110,12 @@ postgres มีไว้เป็น safe default สำหรับ:
 initdb -D /usr/local/pgsql/data
 ```
 
-<style>
-.tip-box {
-  border: 1px solid #00c911;;
-  padding: 15px;
-  border-radius: 5px;
-  margin: 0 auto 15px;
-  max-width: 600px;
-}
-</style>
-<div class="tip-box">
-  <p style="text-align:center;">Tip</p>
+```
+  Tip
   # หรือเพิ่ม environment variable ใน ~/.profile<br>
   export PGDATA=/usr/local/pgsql/data<br>
   # หลังจากนั้น source ~/.profile
-</div>
+```
 
 `initdb` จะพยายามสร้าง `directory` ที่คุณระบุหากยังไม่มีอยู่ แน่นอนว่าขั้นตอนนี้จะล้มเหลว initdb ไม่มีสิทธิ์ในการเขียนใน `/usr/local` directory แนะนำให้ผู้ใช้ `postgres` เป็นเจ้าของไม่เพียงแค่ data directory เท่านั้น แต่รวมถึง pgsql directory ด้วย เพื่อไม่ให้เกิดปัญหานี้
 
