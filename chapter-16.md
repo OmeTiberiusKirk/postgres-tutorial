@@ -112,8 +112,8 @@ initdb -D /usr/local/pgsql/data
 
 ```
   Tip
-  # หรือเพิ่ม environment variable ใน ~/.profile<br>
-  export PGDATA=/usr/local/pgsql/data<br>
+  # หรือเพิ่ม environment variable ใน ~/.profile
+  export PGDATA=/usr/local/pgsql/data
   # หลังจากนั้น source ~/.profile
 ```
 
