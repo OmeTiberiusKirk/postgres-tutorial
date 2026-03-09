@@ -1,5 +1,9 @@
 ## wsl
 
+### Installing a Linux distribution
+
+wsl --install ubuntu-24.04
+
 ### export & imoprt distro
 
 ```
@@ -106,17 +110,21 @@ postgres มีไว้เป็น safe default สำหรับ:
 initdb -D /usr/local/pgsql/data
 ```
 
-หรือเพิ่ม environment variable ใน ~/.profile ก่อน
-
-```
-export PGDATA=/usr/local/pgsql/data
-```
-
-หลังจากนั้น source ~/.profile
-
-```
-initdb
-```
+<style>
+.tip-box {
+  border: 1px solid #00c911;;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 0 auto 15px;
+  max-width: 600px;
+}
+</style>
+<div class="tip-box">
+  <p style="text-align:center;">Tip</p>
+  # หรือเพิ่ม environment variable ใน ~/.profile<br>
+  export PGDATA=/usr/local/pgsql/data<br>
+  # หลังจากนั้น source ~/.profile
+</div>
 
 `initdb` จะพยายามสร้าง `directory` ที่คุณระบุหากยังไม่มีอยู่ แน่นอนว่าขั้นตอนนี้จะล้มเหลว initdb ไม่มีสิทธิ์ในการเขียนใน `/usr/local` directory แนะนำให้ผู้ใช้ `postgres` เป็นเจ้าของไม่เพียงแค่ data directory เท่านั้น แต่รวมถึง pgsql directory ด้วย เพื่อไม่ให้เกิดปัญหานี้
 
@@ -126,8 +134,6 @@ initdb
 sudo mkdir /usr/local/pgsql
 sudo chown postgres /usr/local/pgsql
 initdb -D /usr/local/pgsql/data
-# หรือ
-initdb
 ```
 
 เนื่องจาก data directory ประกอบด้วยข้อมูลทั้งหมด ที่จัดเก็บอยู่ในฐานข้อมูล จึงจำเป็นอย่างยิ่งที่จะต้องรักษาความปลอดภัย จากการเข้าถึงโดยไม่ได้รับอนุญาต ดังนั้น initdb จึงเพิกถอนสิทธิ์การเข้าถึง จากทุกคน ยกเว้นผู้ใช้ `postgres` และอาจรวมถึงกลุ่มด้วย การเข้าถึงแบบกลุ่ม เมื่อเปิดใช้งาน จะต้องเป็น `read-only` ซึ่งจะอนุญาตให้ผู้ใช้ที่ไม่มีสิทธิ์ ซึ่งอยู่ในกลุ่มเดียวกันกับเจ้าของคลัสเตอร์ สามารถสำรองข้อมูลคลัสเตอร์ หรือดำเนินการอื่นๆ ที่ต้องการเพียงสิทธิ์ในการอ่านเท่านั้นได้
@@ -140,7 +146,7 @@ initdb
 
 ```
 # ปิด cluster
-pg_ctl -l logfile stop
+pg_ctl -D /usr/local/pgsql/data stop -l logfile
 
 # สำหรับ directories
 find $PGDATA -type d -exec chmod 700 {} +
@@ -149,7 +155,7 @@ find $PGDATA -type d -exec chmod 700 {} +
 find $PGDATA -type f -exec chmod 600 {} +
 
 # เปิด cluster
-pg_ctl -l logfile start
+pg_ctl -D /usr/local/pgsql/data start -l logfile
 ```
 
 อย่างไรก็ตาม แม้ว่าเนื้อหาใน `directory` จะปลอดภัย แต่การตั้งค่าการตรวจสอบสิทธิ์ไคลเอ็นต์เริ่มต้น อนุญาตให้ local user ใดก็ตาม สามารถเชื่อมต่อกับฐานข้อมูล แม้จะเป็นผู้ใช้ระดับสูงสุด ของฐานข้อมูลก็ตาม
@@ -190,10 +196,10 @@ locale ที่ไม่ใช่ C และไม่ใช่ POSIX จะอ
 
 ### การแยกแยะความล้มเหลว (Clean Failures)
 
-ถ้าคุณสั่งให้ติดตั้ง PostgreSQL ไปที่ /mnt/db โดยตรง แต่เกิดเหตุการณ์ที่ Disk หลุด (Unmounted):
+ถ้าคุณสั่งให้ติดตั้ง PostgreSQL ไปที่ /mnt/db โดยตรง แต่เกิดเหตุการณ์ที่ Disk หลุด (Unmounted) :
 
-- ถ้าใช้ Mount Point ตรงๆ: Postgres อาจจะเผลอไปเขียนข้อมูลลงบน Partition หลัก (/) ของเครื่องแทน เพราะโฟลเดอร์ /mnt/db ยังคงมีอยู่ (ในฐานะ empty directory บน root) ทำให้ Disk ของระบบเต็มและเครื่องค้างได้
-- ถ้าใช้ Directory ย่อย: เมื่อ Disk หลุด โฟลเดอร์ย่อยจะหายไปด้วย Postgres จะหาโฟลเดอร์ข้อมูลไม่เจอและ หยุดทำงาน (Fail) ทันที ซึ่งปลอดภัยกว่าการเขียนข้อมูลผิดที่
+- ถ้าใช้ Mount Point ตรงๆ Postgres อาจจะเผลอไปเขียนข้อมูลลงบน Partition หลัก (/) ของเครื่องแทน เพราะโฟลเดอร์ /mnt/db ยังคงมีอยู่ (ในฐานะ empty directory บน root) ทำให้ Disk ของระบบเต็มและเครื่องค้างได้
+- ถ้าใช้ Directory ย่อย เมื่อ Disk หลุด โฟลเดอร์ย่อยจะหายไปด้วย Postgres จะหาโฟลเดอร์ข้อมูลไม่เจอและ หยุดทำงาน (Fail) ทันที ซึ่งปลอดภัยกว่าการเขียนข้อมูลผิดที่
 
 ## Starting the Database Server
 
