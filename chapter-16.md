@@ -1,6 +1,6 @@
 ## wsl
 
-### Installing a Linux distribution
+### Installing the Ubuntu distribution.
 
 wsl --install ubuntu-24.04
 
