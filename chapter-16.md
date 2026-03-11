@@ -112,9 +112,10 @@ initdb -D /usr/local/pgsql/data
 
 ```
   Tip
-  # หรือเพิ่ม environment variable ใน ~/.profile
+  # หากเพิ่ม environment variable ใน ~/.profile
   export PGDATA=/usr/local/pgsql/data
   # หลังจากนั้น source ~/.profile
+  # ทำให้ไม่ต้องใส่ '-D /usr/local/pgsql/data' ทุกครั้ง ในการใช้ Utilities
 ```
 
 `initdb` จะพยายามสร้าง `directory` ที่คุณระบุหากยังไม่มีอยู่ แน่นอนว่าขั้นตอนนี้จะล้มเหลว initdb ไม่มีสิทธิ์ในการเขียนใน `/usr/local` directory แนะนำให้ผู้ใช้ `postgres` เป็นเจ้าของไม่เพียงแค่ data directory เท่านั้น แต่รวมถึง pgsql directory ด้วย เพื่อไม่ให้เกิดปัญหานี้
@@ -219,6 +220,12 @@ pg_ctl -D /usr/local/pgsql/data start -l logfile
 คำสั่งนี้เซิร์ฟเวอร์จะเริ่มทำงานอยู่เบื้องหลัง (Background Process) และบันทึกผลลัพธ์ลงในไฟล์ Log ที่ระบุชื่อไว้ ตัวเลือก -D มีความหมายเช่นเดียวกับที่ใช้กับ postgres นอกจากนี้ pg_ctl ยังสามารถหยุดเซิร์ฟเวอร์ได้ด้วย
 
 โดยปกติแล้ว ควรเริ่มต้น `database server` เมื่อคอมพิวเตอร์บูตเครื่อง สคริปต์การเริ่มต้นอัตโนมัติ จะขึ้นอยู่กับระบบปฏิบัติการ มีสคริปต์ตัวอย่างบางส่วน ที่แจกจ่ายมาพร้อมกับ PostgreSQL ใน directory (ที่ดาวน์โหลด) contrib/start-scripts การติดตั้งสคริปต์ใดสคริปต์หนึ่ง จะต้องใช้สิทธิ์ผู้ดูแลระบบ (root privileges)
+
+ระบบปฏิบัติการที่ต่างกัน ข้อกำหนด (วิธีการ) ในการสั่งให้ Daemon เริ่มทำงานตอนเปิดเครื่อง (Boot) ที่แตกต่างกันออกไป หลายระบบใช้ไฟล์ `/etc/rc.local` หรือ `/etc/rc.d/rc.local` บางระบบใช้ไดเร็กทอรี `init.d` หรือ `rc.d` ไม่ว่าคุณจะทำอย่างไร เซิร์ฟเวอร์จะต้องทำงานโดยบัญชีผู้ใช้ `postgres` ไม่ใช่โดย `root` หรือผู้ใช้อื่นๆ ดังนั้นคุณควรใช้คำสั่ง su postgres -c '...' ตัวอย่างเช่น:
+
+```
+su postgres -c 'pg_ctl start -D /usr/local/pgsql/data -l serverlog'
+```
 
 ### Footnotes
 
