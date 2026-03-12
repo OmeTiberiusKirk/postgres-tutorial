@@ -227,6 +227,28 @@ pg_ctl -D /usr/local/pgsql/data start -l logfile
 su postgres -c 'pg_ctl start -D /usr/local/pgsql/data -l serverlog'
 ```
 
+หากใช้ systemd คุณสามารถสร้างไฟล์ service ต่อไปนี้ได้ (เช่น ที่ /etc/systemd/system/postgresql.service):
+
+```
+[Unit]
+Description=PostgreSQL database server
+Documentation=man:postgres(1)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=postgres
+ExecStart=/usr/local/pgsql/bin/postgres -D /usr/local/pgsql/data
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutSec=infinity
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ### Footnotes
 
 [^1]: daemon คือโปรแกรมที่รันอยู่เบื้องหลังตลอดเวลา เช่น Web server (เช่น Nginx, Apache), Database server (เช่น PostgreSQL) และ SSH server
