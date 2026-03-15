@@ -2,44 +2,48 @@
 
 ### Installing the Ubuntu distribution.
 
+```
+# Displays a list of available distributions for install with 'wsl.exe --install'.
+wsl --list -o
+
+# Install a Windows Subsystem for Linux distribution.
 wsl --install ubuntu-24.04
+```
 
 ### export & imoprt distro
 
 ```
+# Terminates the specified distribution.
 wsl --terminate ubuntu-24.04
+
+# Exports the distribution to a tar file.
 wsl --export ubuntu-24.04 $USERPROFILE/Downloads/ubuntu.tar
+
+# Imports the specified tar file as a new distribution.
 wsl --import ubuntu-24.04 $USERPROFILE/AppData/Local/Packages/Ubuntu $USERPROFILE/Downloads/ubuntu.tar
 ```
 
-### ปิด dir background โดยการแก้ไข
-
-```
-//  ~/.bashrc
-LS_COLORS=$LS_COLORS:'ow=1;34:'
-```
-
-จากนั้น source ~/.bashrc
-
-### Vim for all users.
-
-`/etc/vim/vimrc.local`
-
 ## Architectural Fundamentals
 
-ในศัพท์ทางฐานข้อมูล PostgreSQL ใช้โมเดลแบบ Client/Server (ลูกข่าย/แม่ข่าย)
+PostgreSQL จะใช้โมเดลแบบ Client/Server ซึ่งประกอบด้วย 2 ส่วนหลักที่ทำงานประสานกัน ดังนี้ครับ:
 
-โดยเซสชัน (Session) ของ PostgreSQL จะประกอบด้วยกระบวนการ (โปรแกรม) ที่ทำงานร่วมกันดังต่อไปนี้: กระบวนการเซิร์ฟเวอร์ (Server Process) ซึ่งจัดการไฟล์ฐานข้อมูลรับการเชื่อมต่อจากแอปพลิเคชันไคลเอนต์ และดำเนินการจัดการฐานข้อมูลแทนไคลเอนต์ (โปรแกรมนี้เรียกว่า postgres) และแอปพลิเคชันไคลเอนต์ (Frontend) ของผู้ใช้ :
+- ฝั่งเซิร์ฟเวอร์ (Server Process) คือโปรแกรมที่ทำหน้าที่เป็น "ตัวจัดการหลัก" มีชื่อเรียกเฉพาะว่า postgres หน้าที่ของมันคือ
+  - จัดการไฟล์ข้อมูลทั้งหมดของฐานข้อมูล
+  - รอรับการเชื่อมต่อ (Connections) จากแอปพลิเคชันฝั่ง Client
+  - ทำงานต่างๆ ตามที่ Client สั่ง (เช่น การเขียน การอ่าน หรือการแก้ไขข้อมูล)
 
-- Server Process (postgres): ทำหน้าที่หลักในการบริหารจัดการข้อมูลรับคำสั่งจาก client และประมวลผล.
-- Client Application: โปรแกรมหน้าบ้านที่ผู้ใช้ใช้งาน เช่น เครื่องมือแบบข้อความ (Text-oriented tool) แอปพลิเคชันกราฟิก, Web Server หรือเครื่องมือบำรุงรักษาฐานข้อมูล
+- ฝั่งไคลเอนต์ (Client Application) คือแอปพลิเคชันหรือโปรแกรมส่วนหน้า (Frontend) ที่ผู้ใช้ใช้งานเพื่อต้องการเข้าถึงข้อมูล ซึ่งมีความหลากหลายมาก เช่น:
+  - เครื่องมือแบบข้อความ (Text-oriented): เช่น psql
+  - แอปพลิเคชันแบบกราฟิก (GUI): เช่น pgAdmin
+  - เว็บเซิร์ฟเวอร์: ที่เรียกใช้ฐานข้อมูลเพื่อนำข้อมูลไปแสดงบนหน้าเว็บ
+  - เครื่องมือเฉพาะทาง: สำหรับการดูแลรักษาฐานข้อมูล
 
 โดยทั่วไปแล้ว client / server นั้นสามารถอยู่บนโฮสต์ที่แตกต่างกันได้ ในกรณีนี้จะสื่อสารกันผ่านการเชื่อมต่อเครือข่าย TCP/IP
 
 ## Installing the software packages
 
 ```
-sudo apt update &&
+sudo apt update && \
 sudo apt install -y bzip2 build-essential pkg-config libicu-dev \
 bison flex libreadline-dev zlib1g-dev
 ```
@@ -49,6 +53,7 @@ bison flex libreadline-dev zlib1g-dev
 ดาวน์โหลดไฟล์ได้ที่ https://www.postgresql.org/ftp/source/ หาเวอร์ชั่นที่ต้องการ postgresql-{version}.tar.gz หรือ postgresql-{version}.tar.bz2 แล้วแตกไฟล์:
 
 ```
+cp /mnt/c/Users/{user}/Downloads/postgresql-{version}.tar.bz2 ./
 tar -xvf postgresql-{version}.tar.gz
 ```
 
@@ -57,16 +62,16 @@ tar -xvf postgresql-{version}.tar.gz
 ```
 ./configure
 make
-sudo su
-make install
-adduser postgres
-mkdir -p /usr/local/pgsql/data
-chown postgres /usr/local/pgsql/data
-su - postgres
-/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data
-/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start
-/usr/local/pgsql/bin/createdb test
-/usr/local/pgsql/bin/psql test
+sudo make install
+
+sudo adduser postgres
+sudo mkdir -p /usr/local/pgsql/data
+sudo chown postgres /usr/local/pgsql/data
+
+su - postgres -c "/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data"
+su - postgres -c "/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start"
+su - postgres -c "/usr/local/pgsql/bin/createdb test"
+su - postgres -c "/usr/local/pgsql/bin/psql test"
 ```
 
 ## Adding a path for Command Line Utilities
@@ -77,20 +82,21 @@ export PATH=$PATH:/usr/local/pgsql/bin
 
 ## The PostgreSQL User Account
 
-เช่นเดียวกับโปรแกรมเซิร์ฟเวอร์ (daemon) [^1] อื่นๆ ที่เปิดให้เข้าถึงจากภายนอก ควรรัน PostgreSQL ภายใต้บัญชีผู้ใช้ (user account) ที่แยกต่างหาก
+เช่นเดียวกับ Server ทั่วไป ที่เปิดให้โลกภายนอกเข้าถึงได้ มีคำแนะนำที่สำคัญมากดังนี้:
 
-บัญชีผู้ใช้นี้ควรเป็นเจ้าของเฉพาะข้อมูล ที่จัดการโดยเซิร์ฟเวอร์เท่านั้น และไม่ควรแชร์กับ daemon อื่นๆ
+- ต้องใช้ Account แยกต่างหาก: ควรตั้ง User ขึ้นมาใหม่ (ปกติคือ postgres) เพื่อรัน PostgreSQL โดยเฉพาะ
+- ห้ามแชร์ User ร่วมกับบริการอื่น: อย่าใช้ User เดียวกันไปรันอย่างอื่น (เช่น ห้ามใช้ nobody เพราะ nobody มักจะถูกใช้โดยบริการจิปาถะหลายตัว ถ้าตัวหนึ่งโดนเจาะ ตัวอื่นจะพลอยซวยไปด้วย)
+- สิทธิ์เหนือข้อมูลเท่านั้น: User นี้ควรมีสิทธิ์ "เป็นเจ้าของ" (Owner) เฉพาะ ไฟล์ข้อมูล (Data Files) ที่ PostgreSQL จัดการเท่านั้น
 
-(ตัวอย่างเช่น การใช้ผู้ใช้ nobody เป็นความคิดที่ไม่ดี) ขอแนะนำว่าบัญชีผู้ใช้นี้ ไม่ควรเป็นเจ้าของไฟล์ปฏิบัติการของ PostgreSQL เพื่อให้แน่ใจว่ากระบวนการเซิร์ฟเวอร์ ที่ถูกบุกรุกจะไม่สามารถแก้ไขไฟล์ปฏิบัติการเหล่านั้นได้ เช่น :
+เพื่อให้แน่ใจว่ากระบวนการเซิร์ฟเวอร์ ที่ถูกบุกรุกจะไม่สามารถแก้ไขไฟล์ปฏิบัติการเหล่านั้นได้ เช่น `/usr/local/pgsql/bin/postgres`, `/usr/local/pgsql/bin/psql`
 
 ```
-  /usr/local/pgsql/bin/postgres
-  /usr/local/pgsql/bin/psql
+sudo adduser postgres
 ```
 
 ## Creating a Database Cluster
 
-ก่อนอื่นจะทำอะไร ต้องเตรียมพื้นที่จัดเก็บฐานข้อมูลบนดิสก์ก่อน เราเรียกสิ่งนี้ว่า `database cluster` (มาตรฐาน SQL ใช้คำว่า `catalog cluster`) `database cluster` คือกลุ่มของ `databases` ที่ได้รับการจัดการโดย อินสแตนซ์เดียว ของเซิร์ฟเวอร์ฐานข้อมูลที่กำลังทำงานอยู่
+ก่อนอื่นต้องเตรียมพื้นที่ จัดเก็บฐานข้อมูลบนดิสก์ก่อน เราเรียกสิ่งนี้ว่า `database cluster` (มาตรฐาน SQL ใช้คำว่า `catalog cluster`) `database cluster` คือกลุ่มของ `databases` ที่ได้รับการจัดการโดย อินสแตนซ์เดียว ของเซิร์ฟเวอร์ฐานข้อมูลที่กำลังทำงานอยู่
 
 หลังจากเริ่มต้นระบบแล้ว `database cluster` จะประกอบด้วยฐานข้อมูลชื่อ postgres ซึ่งมีจุดประสงค์ เพื่อใช้เป็นฐานข้อมูลเริ่มต้นสำหรับ utitlities, users และ third party applications
 
@@ -108,19 +114,23 @@ postgres มีไว้เป็น safe default สำหรับ:
 
 ```
 initdb -D /usr/local/pgsql/data
-```
 
-```
-  Tip
+Tip
+  # ไม่ต้องใส่ '-D /usr/local/pgsql/data' ทุกครั้ง ในการใช้ utilities
   # หากเพิ่ม environment variable ใน ~/.profile
   export PGDATA=/usr/local/pgsql/data
   # หลังจากนั้น source ~/.profile
-  # ทำให้ไม่ต้องใส่ '-D /usr/local/pgsql/data' ทุกครั้ง ในการใช้ Utilities
 ```
 
 `initdb` จะพยายามสร้าง `directory` ที่คุณระบุหากยังไม่มีอยู่ แน่นอนว่าขั้นตอนนี้จะล้มเหลว initdb ไม่มีสิทธิ์ในการเขียนใน `/usr/local` directory แนะนำให้ผู้ใช้ `postgres` เป็นเจ้าของไม่เพียงแค่ data directory เท่านั้น แต่รวมถึง pgsql directory ด้วย เพื่อไม่ให้เกิดปัญหานี้
 
 คุณจะต้องสร้างมันขึ้นมาก่อน โดยใช้สิทธิ์ root หาก /usr/local ไม่สามารถเขียนได้ ดังนั้นกระบวนการจะมีลักษณะดังนี้:
+
+```
+sudo mkdir -p /usr/local/pgsql/data
+sudo chown postgres /usr/local/pgsql/data
+initdb
+```
 
 ```
 sudo mkdir /usr/local/pgsql
