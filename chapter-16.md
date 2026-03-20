@@ -45,7 +45,7 @@ PostgreSQL จะใช้โมเดลแบบ Client/Server ซึ่งป
 ```
 sudo apt update && \
 sudo apt install -y bzip2 build-essential pkg-config libicu-dev \
-bison flex libreadline-dev zlib1g-dev
+bison flex libreadline-dev zlib1g-dev libsystemd-dev
 ```
 
 ## Getting the Source
@@ -60,20 +60,12 @@ tar -xvf postgresql-{version}.tar.gz
 ## Building and Installation
 
 ```
-./configure
+# กำหนดค่า
+./configure --with-systemd
 # Build
 make
 # Installing the Files
 sudo make install
-
-sudo adduser postgres
-sudo mkdir -p /usr/local/pgsql/data
-sudo chown postgres /usr/local/pgsql/data
-
-su - postgres -c "/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data"
-su - postgres -c "/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start"
-su - postgres -c "/usr/local/pgsql/bin/createdb test"
-su - postgres -c "/usr/local/pgsql/bin/psql test"
 ```
 
 ## The PostgreSQL User Account
@@ -252,8 +244,10 @@ Wants=network-online.target
 [Service]
 Type=notify
 User=postgres
+
 ExecStart=/usr/local/pgsql/bin/postgres -D /usr/local/pgsql/data
 ExecReload=/bin/kill -HUP $MAINPID
+
 KillMode=mixed
 KillSignal=SIGINT
 TimeoutSec=infinity
@@ -262,6 +256,12 @@ TimeoutSec=infinity
 WantedBy=multi-user.target
 ```
 
+## systemd RemoveIPC
+
+หากมีการใช้งาน `systemd` ต้องระมัดระวังทรัพยากร `IPC` (รวมถึงหน่วยความจำที่ใช้ร่วมกัน) ไม่ให้ถูกลบโดย `OS` โดยเฉพาะอย่างยิ่งเมื่อติดตั้ง PostgreSQL จากซอร์สโค้ด เพราะการติดตั้งแบบอื่น ผู้ใช้ `postgres` จะถูกสร้างขึ้นเป็น `system user`
+
+การตั้งค่า RemoveIPC จะอยู่ในในไฟล์ logind.conf จะควบคุมว่า IPC จะถูกลบออกหรือไม่ เมื่อผู้ใช้ล็อกเอาต์อย่างสมบูรณ์ (ยกเว้น `system user`)การตั้งค่านี้มีค่าเริ่มต้นเป็น `เปิด` ใน systemd มาตรฐาน แต่ระบบปฏิบัติการบางรุ่น อาจมีค่าเริ่มต้นเป็นปิด
+
 ### Footnotes
 
 [^1]: แม้ว่า initdb หากกำหนดค่าเริ่มต้นของ Cluster เป็น en_US ไปแล้ว แต่ PostgreSQL ออกแบบมาให้เราสามารถสร้าง Database ใหม่ที่มีการตั้งค่า Locale ต่างจากค่าเริ่มต้นได้ (เรียกว่าการ Overwrite ค่า Default) แต่เวลาคุณสั่งรัน Tool บางอย่างผ่าน Command Line (เช่น reindexdb หรือ vacuumdb) ถ้าไม่ได้ระบุ Database ให้ชัดเจน มันอาจจะอ้างอิงค่าจาก User Environment แทน
@@ -269,3 +269,31 @@ WantedBy=multi-user.target
 [^2]: โดยปกติเมื่อคุณใช้คำสั่ง CREATE DATABASE name; ตัว PostgreSQL จะไม่ได้สร้างฐานข้อมูลขึ้นมาจากความว่างเปล่า แต่จะทำทำการ "Copy" ไฟล์ทั้งหมดมาจาก Template
 
 [^3]: C หรือ POSIX เรียงตาม Binary ไม่สนภาษา ปลอดภัยที่สุดในการย้ายเครื่อง แต่อาจเรียงภาษาไทยไม่ค่อยดี
+
+```
+./configure \
+ ICU_CFLAGS="-I/usr/local/icu-custom/include" \
+ ICU_LIBS="-L/usr/local/icu-custom/lib -licui18n -licuuc -licudata"
+
+initdb --locale-provider=icu \
+--locale-provider=icu \
+--icu-locale=th-TH \
+--encoding=UTF8
+```
+
+```
+# นอกเรื่อง
+docker exec ghb-pms-postgres pg_dump -U pmsdb pms > uat-backup.sql
+
+docker exec -it gsb-pms-postgres bash
+
+docker cp ~/backupds/prod-backup.sql gsb-pms-postgres:/var/lib/postgresql/
+
+docker cp gsb-pms-postgres:/var/lib/postgresql/data/log/postgresql-2026-03-19_000000.log ./
+
+docker exec gsb-pms-postgres psql -U pmsdb -d pms -f /var/lib/postgresql/ prod-backup.sql
+
+initdb --lc-collate=C --lc-ctype=C -E UTF8
+
+tar --exclude='logs' --exclude='postgres_data' --exclude='backups' -cvjf db-server.tar.bz2 db-server/
+```
