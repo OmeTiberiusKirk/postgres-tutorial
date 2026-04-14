@@ -42,7 +42,7 @@ set laststatus=2
 " set mouse=a
 
 " Use the system clipboard for copy and paste
-" set clipboard=unnamedplus
+set clipboard=unnamedplus
 
 " Remap 'jj' to escape for easier navigation
 inoremap jj <Esc>
